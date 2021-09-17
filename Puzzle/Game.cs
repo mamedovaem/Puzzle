@@ -7,31 +7,23 @@ namespace Puzzle
 {
     class Game
     {
-        RenderWindow _window;
-        Field field;
-        int currRow, currCol;
+        private RenderWindow _window;
+        private Field _field;
+        private int _currentRow;
+        private int _currentCol;
 
-        public Game()
+        public Game(RenderWindow window)
         {
-            _window = new(new(450, 400), "SFML.NET");
-            _window.SetFramerateLimit(60);
+            _window = window;
+            _field = new Field();
 
-            field = new Field();
-
-            currRow = 0;
-            currCol = 0;
-            DrawCurrCell();
-        }
-
-        public void Run()
-        {
-            //  key events
+            _currentRow = 0;
+            _currentCol = 0;
 
             _window.Closed += (obj, e) => { _window.Close(); };
             _window.KeyPressed +=
                 (sender, e) =>
                 {
-
                     var window = (Window)sender;
                     switch (e.Code)
                     {
@@ -39,27 +31,27 @@ namespace Puzzle
                             window.Close();
                             break;
                         case Keyboard.Key.Enter:
-
-                            field.map[currRow, currCol].SelectCell();
+                            _field.Map[_currentRow, _currentCol].SelectCell();
                             break;
-
                         default:
-                            //если клетка не выбрана
-
-                            if (!field.map[currRow, currCol].isSelected)
-                                MoveCell(e.Code);
+                            if (!_field.Map[_currentRow, _currentCol].IsSelected)
+                                MoveSelection(e.Code);
                             else
-                                //если выбрана
-                                MakeMove(e.Code);
+                                MoveTile(e.Code);
                             break;
                     }
 
                 };
 
+        }
+
+        public void Run()
+        {
             while (_window.IsOpen && !CheckForWin())
             {
                 _window.DispatchEvents();
                 _window.Clear();
+
                 DrawMap();
 
                 _window.Display();
@@ -68,89 +60,82 @@ namespace Puzzle
 
         public void DrawMap()
         {
-            _window.Draw(field.leftColumn);
-            _window.Draw(field.centerColumn);
-            _window.Draw(field.rightColumn);
+            _window.Draw(_field.LeftColumn);
+            _window.Draw(_field.CenterColumn);
+            _window.Draw(_field.RightColumn);
 
-            for (int i = 0; i < Field.mapSize; i++)
-                for (int j = 0; j < Field.mapSize; j++)
-                    _window.Draw(field.map[i, j]);
+            for (int i = 0; i < Field.MapSize; i++)
+                for (int j = 0; j < Field.MapSize; j++)
+                    _window.Draw(_field.Map[i, j]);
 
-            DrawCurrCell();
+            DrawSelection();
         }
 
 
-        public void DrawCurrCell()
+        public void DrawSelection()
         {
-            Vector2f cellSize = new Vector2f(Cell.size, Cell.size);
-            RectangleShape currCell = new RectangleShape(cellSize);
-            currCell.Position = new Vector2f(currCol * Cell.size + Cell.offsetCol, currRow * Cell.size + Cell.offsetRow);
-            currCell.OutlineColor = Color.White;
-            currCell.FillColor = Color.Transparent;
-            currCell.OutlineThickness = field.map[currRow, currCol].currOutline;
-            _window.Draw(currCell);
+            RectangleShape selection = new Cell(CellType.EmptyCell, _currentRow, _currentCol)
+            {
+                OutlineColor = Color.White,
+                FillColor = Color.Transparent,
+                OutlineThickness = _field.Map[_currentRow, _currentCol].CurrentOutline
+            };
+
+            _window.Draw(selection);
         }
-        public void MoveCell(Keyboard.Key key)
+        public void MoveSelection(Keyboard.Key key)
         {
-
-
             switch (key)
             {
                 case Keyboard.Key.Up:
-                    if (currRow != 0)
+                    if (_currentRow != 0)
                     {
-                        currRow--;
+                        _currentRow--;
 
                     }
                     break;
 
                 case Keyboard.Key.Down:
-                    if (currRow != Field.mapSize - 1)
+                    if (_currentRow != Field.MapSize - 1)
                     {
-                        currRow++;
+                        _currentRow++;
 
                     }
                     break;
 
                 case Keyboard.Key.Left:
-                    if (currCol != 0)
+                    if (_currentCol != 0)
                     {
-                        currCol--;
+                        _currentCol--;
 
                     }
                     break;
 
                 case Keyboard.Key.Right:
-                    if (currCol != Field.mapSize - 1)
+                    if (_currentCol != Field.MapSize - 1)
                     {
-                        currCol++;
+                        _currentCol++;
 
                     }
                     break;
 
             }
-
-            DrawCurrCell();
         }
 
         public bool CheckPossibleMove(int row, int col)
         {
-            if (field.map[row, col].type == CellType.emptyCell &&
-                (Math.Abs(row - currRow) + Math.Abs(col - currCol) < 2))
-                return true;
-
-            return false;
+            return (_field.Map[row, col].Type == CellType.EmptyCell);
         }
 
-        public void MakeMove(Keyboard.Key key)
+        public void MoveTile(Keyboard.Key key)
         {
-            int newRow = currRow;
-            int newCol = currCol;
+            int newRow = _currentRow;
+            int newCol = _currentCol;
 
             switch (key)
             {
                 case Keyboard.Key.Up:
-                    if (currRow != 0 && CheckPossibleMove(newRow - 1, newCol))
+                    if (_currentRow != 0 && CheckPossibleMove(newRow - 1, newCol))
                     {
                         newRow--;
 
@@ -158,7 +143,7 @@ namespace Puzzle
                     break;
 
                 case Keyboard.Key.Down:
-                    if (currRow != Field.mapSize - 1 && CheckPossibleMove(newRow + 1, newCol))
+                    if (_currentRow != Field.MapSize - 1 && CheckPossibleMove(newRow + 1, newCol))
                     {
                         newRow++;
 
@@ -166,7 +151,7 @@ namespace Puzzle
                     break;
 
                 case Keyboard.Key.Left:
-                    if (currCol != 0 && CheckPossibleMove(newRow, newCol - 1))
+                    if (_currentCol != 0 && CheckPossibleMove(newRow, newCol - 1))
                     {
                         newCol--;
 
@@ -174,52 +159,42 @@ namespace Puzzle
                     break;
 
                 case Keyboard.Key.Right:
-                    if (currCol != Field.mapSize - 1 && CheckPossibleMove(newRow, newCol + 1))
+                    if (_currentCol != Field.MapSize - 1 && CheckPossibleMove(newRow, newCol + 1))
                     {
                         newCol++;
 
                     }
 
                     break;
-
             }
 
-            Cell temp = field.map[currRow, currCol];
-            Vector2f temp_pos = field.map[newRow, newCol].Position;
+            Cell temp = _field.Map[_currentRow, _currentCol];
+            Vector2f temp_pos = _field.Map[newRow, newCol].Position;
 
-            field.map[currRow, currCol] = field.map[newRow, newCol];
-            field.map[currRow, currCol].Position = temp.Position;
+            _field.Map[_currentRow, _currentCol] = _field.Map[newRow, newCol];
+            _field.Map[_currentRow, _currentCol].Position = temp.Position;
 
-            field.map[newRow, newCol] = temp;
-            field.map[newRow, newCol].Position = temp_pos;
+            _field.Map[newRow, newCol] = temp;
+            _field.Map[newRow, newCol].Position = temp_pos;
 
-            currRow = newRow;
-            currCol = newCol;
-
-            DrawMap();
-
+            _currentRow = newRow;
+            _currentCol = newCol;
 
         }
 
-
-
         public bool CheckForWin()
         {
-            bool hasWon = true;
-
-            for (int i = 0; i < Field.mapSize; i++)
+            for (int i = 0; i < Field.MapSize; i++)
             {
-                if (field.map[i, 0].type == field.leftColor &&
-                   field.map[i, 2].type == field.centerColor &&
-                   field.map[i, 4].type == field.rightColor)
-                    continue;
-                else
+                if (_field.Map[i, 0].FillColor != _field.LeftColumn.FillColor ||
+                   _field.Map[i, 2].FillColor != _field.CenterColumn.FillColor ||
+                   _field.Map[i, 4].FillColor != _field.RightColumn.FillColor)
                 {
-                    hasWon = false;
-                    break;
+                    return false;
                 }
             }
-            return hasWon;
+
+            return true;
         }
 
     }

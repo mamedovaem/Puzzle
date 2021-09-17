@@ -3,79 +3,57 @@ using SFML.System;
 
 namespace Puzzle
 {
-    public enum CellType { redChip, orangeChip, yellowChip, blockedCell, emptyCell }
+    public enum CellType
+    {
+        Tile,
+        BlockedCell,
+        EmptyCell
+    }
 
     public class Cell : RectangleShape
 
     {
-        public static int size = 50;
-        public static int offsetRow = 150;
-        public static int offsetCol = 100;
+        public static int CellSize = 50;
+        public static int OffsetRow = 150;
+        public static int OffsetCol = 100;
 
-        static Color Orange = new Color(255, 127, 0);
-        static Color Gray = new Color(127, 127, 127);
+        public static Color Orange = new Color(255, 127, 0);
+        public static Color Gray = new Color(127, 127, 127);
 
-        public static int selectedOutline = 3;
-        public static int simpleOutline = 1;
-        public int currOutline;
+        private static int SelectedOutline = 3;
+        private static int SimpleOutline = 1;
+        public int CurrentOutline;
 
-        public CellType type;
-        public bool isSelected;
+        public CellType Type;
+        public bool IsSelected;
 
-        public Cell(CellType type = CellType.emptyCell, int row = 0, int col = 0)
+        public Cell(CellType type = CellType.EmptyCell, int row = 0, int col = 0)
         {
-            this.type = type;
-            currOutline = simpleOutline;
-            isSelected = false;
+            Type = type;
+            CurrentOutline = SimpleOutline;
+            IsSelected = false;
 
-            Size = new Vector2f(size, size);
-            Position = new Vector2f(col * size + offsetCol, row * size + offsetRow);
+            Size = new Vector2f(CellSize, CellSize);
+            Position = new Vector2f(col * CellSize + OffsetCol, row * CellSize + OffsetRow);
 
-            switch (type)
-            {
-                case CellType.redChip:
-                    this.FillColor = Color.Red;
-                    break;
-                case CellType.orangeChip:
-                    this.FillColor = Orange;
-                    break;
-                case CellType.yellowChip:
-                    this.FillColor = Color.Yellow;
-                    break;
-                case CellType.blockedCell:
-                    this.FillColor = Gray;
-                    break;
-                case CellType.emptyCell:
-                    this.FillColor = Color.Black;
-                    break;
 
-            }
         }
 
         public void SelectCell()
         {
-
-            switch (type)
-            {
-                case CellType.redChip:
-                case CellType.orangeChip:
-                case CellType.yellowChip:
-
-                    if (!isSelected)
-                    {
-                        currOutline = selectedOutline;
-                        isSelected = true;
-                    }
-                    else
-                    {
-                        currOutline = simpleOutline;
-                        isSelected = false;
-                    }
-                    break;
-            }
-
-
+            if (Type == CellType.Tile)
+                if (!IsSelected)
+                {
+                    CurrentOutline = SelectedOutline;
+                    IsSelected = true;
+                }
+                else
+                {
+                    CurrentOutline = SimpleOutline;
+                    IsSelected = false;
+                }
         }
     }
 }
+
 

@@ -1,76 +1,91 @@
-﻿
+﻿using SFML.Graphics;
+
 namespace Puzzle
 {
     class Field
     {
-        public const int mapSize = 5;
-        public Cell[,] map;
+        public const int MapSize = 5;
+        public Cell[,] Map;
 
-        public Cell leftColumn;
-        public Cell centerColumn;
-        public Cell rightColumn;
-
-        public CellType leftColor;
-        public CellType centerColor;
-        public CellType rightColor;
+        public Cell LeftColumn;
+        public Cell CenterColumn;
+        public Cell RightColumn;
 
         public Field()
         {
-            map = new Cell[mapSize, mapSize];
-            initMap();
-            leftColor = CellType.yellowChip;
-            centerColor = CellType.orangeChip;
-            rightColor = CellType.redChip;
+            Map = new Cell[MapSize, MapSize];
+            InitMap();
 
-            leftColumn = new Cell(leftColor, -2, 0);
-            centerColumn = new Cell(centerColor, -2, 2);
-            rightColumn = new Cell(rightColor, -2, 4);
-
-
+            LeftColumn = new Cell(CellType.Tile, -2, 0)
+            {
+                FillColor = Color.Yellow
+            };
+            CenterColumn = new Cell(CellType.Tile, -2, 2)
+            {
+                FillColor = Cell.Orange
+            };
+            RightColumn = new Cell(CellType.Tile, -2, 4)
+            {
+                FillColor = Color.Red
+            };
         }
 
-        void initMap()
+        void InitMap()
         {
-            //
+
             string charMap = "O B Y B O " + // R - red; O - orange; Y - yellow; B - block; E - empty; 
                              "R E Y E O " +
                              "Y B R B R " +
                              "O E O E Y " +
                              "R B R B Y ";
 
-            parseMap(charMap);
+            ParseMap(charMap);
         }
-        void parseMap(string charMap)
+
+        void ParseMap(string charMap)
         {
             charMap = charMap.Replace(" ", "");
 
-            for (int i = 0; i < mapSize; i++)
-                for (int j = 0; j < mapSize; j++)
+            for (int i = 0; i < MapSize; i++)
+            {
+                for (int j = 0; j < MapSize; j++)
                 {
-                    switch (charMap[i * mapSize + j])
+                    switch (charMap[i * MapSize + j])
                     {
                         case 'R':
-                            map[i, j] = new Cell(CellType.redChip, i, j);
+                            Map[i, j] = new Cell(CellType.Tile, i, j)
+                            {
+                                FillColor = Color.Red
+                            };
                             break;
                         case 'O':
-                            map[i, j] = new Cell(CellType.orangeChip, i, j);
+                            Map[i, j] = new Cell(CellType.Tile, i, j)
+                            {
+                                FillColor = Cell.Orange
+                            };
                             break;
                         case 'Y':
-                            map[i, j] = new Cell(CellType.yellowChip, i, j);
+                            Map[i, j] = new Cell(CellType.Tile, i, j)
+                            {
+                                FillColor = Color.Yellow
+                            };
                             break;
                         case 'B':
-                            map[i, j] = new Cell(CellType.blockedCell, i, j);
+                            Map[i, j] = new Cell(CellType.BlockedCell, i, j)
+                            {
+                                FillColor = Cell.Gray
+                            };
                             break;
                         case 'E':
-                            map[i, j] = new Cell(CellType.emptyCell, i, j);
+                            Map[i, j] = new Cell(CellType.EmptyCell, i, j)
+                            {
+                                FillColor = Color.Black
+                            };
                             break;
 
                     }
-
                 }
+            }
         }
-
-
-
     }
 }
