@@ -1,11 +1,12 @@
 ﻿using SFML.Graphics;
+using SFML.System;
 
 namespace Puzzle
 {
     class Field
     {
         public const int MapSize = 5;
-        public Cell[,] Map;
+        private Cell[,] _map;
 
         public Cell LeftColumn;
         public Cell CenterColumn;
@@ -13,7 +14,7 @@ namespace Puzzle
 
         public Field()
         {
-            Map = new Cell[MapSize, MapSize];
+            _map = new Cell[MapSize, MapSize];
             InitMap();
 
             LeftColumn = new Cell(CellType.Tile, -2, 0)
@@ -39,11 +40,6 @@ namespace Puzzle
                              "O E O E Y " +
                              "R B R B Y ";
 
-            ParseMap(charMap);
-        }
-
-        void ParseMap(string charMap)
-        {
             charMap = charMap.Replace(" ", "");
 
             for (int i = 0; i < MapSize; i++)
@@ -53,31 +49,31 @@ namespace Puzzle
                     switch (charMap[i * MapSize + j])
                     {
                         case 'R':
-                            Map[i, j] = new Cell(CellType.Tile, i, j)
+                            _map[i, j] = new Cell(CellType.Tile, i, j)
                             {
                                 FillColor = Color.Red
                             };
                             break;
                         case 'O':
-                            Map[i, j] = new Cell(CellType.Tile, i, j)
+                            _map[i, j] = new Cell(CellType.Tile, i, j)
                             {
                                 FillColor = Cell.Orange
                             };
                             break;
                         case 'Y':
-                            Map[i, j] = new Cell(CellType.Tile, i, j)
+                            _map[i, j] = new Cell(CellType.Tile, i, j)
                             {
                                 FillColor = Color.Yellow
                             };
                             break;
                         case 'B':
-                            Map[i, j] = new Cell(CellType.BlockedCell, i, j)
+                            _map[i, j] = new Cell(CellType.BlockedCell, i, j)
                             {
                                 FillColor = Cell.Gray
                             };
                             break;
                         case 'E':
-                            Map[i, j] = new Cell(CellType.EmptyCell, i, j)
+                            _map[i, j] = new Cell(CellType.EmptyCell, i, j)
                             {
                                 FillColor = Color.Black
                             };
@@ -86,6 +82,34 @@ namespace Puzzle
                     }
                 }
             }
+        }
+
+        public void UpdateMap(int currentRow, int currentCol, int newRow, int newCol)
+        {
+            Cell temp = _map[currentRow, currentCol];
+            Vector2f temp_pos = _map[newRow, newCol].Position;
+
+            _map[currentRow, currentCol] = _map[newRow, newCol];
+            _map[currentRow, currentCol].Position = temp.Position;
+
+            _map[newRow, newCol] = temp;
+            _map[newRow, newCol].Position = temp_pos;
+        }
+
+        public Cell GetCell(int i, int j)
+        {
+            if (i >= 0 && j >= 0 && i < MapSize && j < MapSize)
+                return _map[i, j];
+            else
+                return _map[0, 0];
+        }
+
+        public void SelectCell(int i, int j)
+        {
+            if (i >= 0 && j >= 0 && i < MapSize && j < MapSize)
+                _map[i, j].Select();
+            else
+                _map[0, 0].Select();
         }
     }
 }

@@ -18,7 +18,7 @@ namespace Puzzle
             Game game = new Game(window);
             game.Run();
 
-            if (game.CheckForWin())
+            if (game.IsFinished)
                 Console.WriteLine("\n\n*** Congratulations! ***");
 
         }

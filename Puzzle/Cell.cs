@@ -35,11 +35,9 @@ namespace Puzzle
 
             Size = new Vector2f(CellSize, CellSize);
             Position = new Vector2f(col * CellSize + OffsetCol, row * CellSize + OffsetRow);
-
-
         }
 
-        public void SelectCell()
+        public void Select()
         {
             if (Type == CellType.Tile)
                 if (!IsSelected)

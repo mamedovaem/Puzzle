@@ -1,7 +1,5 @@
 ﻿using SFML.Graphics;
-using SFML.System;
 using SFML.Window;
-using System;
 
 namespace Puzzle
 {
@@ -11,6 +9,7 @@ namespace Puzzle
         private Field _field;
         private int _currentRow;
         private int _currentCol;
+        public bool IsFinished;
 
         public Game(RenderWindow window)
         {
@@ -19,6 +18,8 @@ namespace Puzzle
 
             _currentRow = 0;
             _currentCol = 0;
+
+            IsFinished = false;
 
             _window.Closed += (obj, e) => { _window.Close(); };
             _window.KeyPressed +=
@@ -31,10 +32,10 @@ namespace Puzzle
                             window.Close();
                             break;
                         case Keyboard.Key.Enter:
-                            _field.Map[_currentRow, _currentCol].SelectCell();
+                            _field.SelectCell(_currentRow, _currentCol);
                             break;
                         default:
-                            if (!_field.Map[_currentRow, _currentCol].IsSelected)
+                            if (!_field.GetCell(_currentRow, _currentCol).IsSelected)
                                 MoveSelection(e.Code);
                             else
                                 MoveTile(e.Code);
@@ -47,11 +48,12 @@ namespace Puzzle
 
         public void Run()
         {
-            while (_window.IsOpen && !CheckForWin())
+            while (_window.IsOpen && !IsFinished)
             {
                 _window.DispatchEvents();
                 _window.Clear();
 
+                CheckForWin();
                 DrawMap();
 
                 _window.Display();
@@ -66,7 +68,7 @@ namespace Puzzle
 
             for (int i = 0; i < Field.MapSize; i++)
                 for (int j = 0; j < Field.MapSize; j++)
-                    _window.Draw(_field.Map[i, j]);
+                    _window.Draw(_field.GetCell(i, j));
 
             DrawSelection();
         }
@@ -78,7 +80,7 @@ namespace Puzzle
             {
                 OutlineColor = Color.White,
                 FillColor = Color.Transparent,
-                OutlineThickness = _field.Map[_currentRow, _currentCol].CurrentOutline
+                OutlineThickness = _field.GetCell(_currentRow, _currentCol).CurrentOutline
             };
 
             _window.Draw(selection);
@@ -122,11 +124,6 @@ namespace Puzzle
             }
         }
 
-        public bool CheckPossibleMove(int row, int col)
-        {
-            return (_field.Map[row, col].Type == CellType.EmptyCell);
-        }
-
         public void MoveTile(Keyboard.Key key)
         {
             int newRow = _currentRow;
@@ -135,7 +132,8 @@ namespace Puzzle
             switch (key)
             {
                 case Keyboard.Key.Up:
-                    if (_currentRow != 0 && CheckPossibleMove(newRow - 1, newCol))
+                    if (_currentRow != 0 &&
+                        _field.GetCell(newRow - 1, newCol).Type == CellType.EmptyCell)
                     {
                         newRow--;
 
@@ -143,7 +141,8 @@ namespace Puzzle
                     break;
 
                 case Keyboard.Key.Down:
-                    if (_currentRow != Field.MapSize - 1 && CheckPossibleMove(newRow + 1, newCol))
+                    if (_currentRow != Field.MapSize - 1 &&
+                        _field.GetCell(newRow + 1, newCol).Type == CellType.EmptyCell)
                     {
                         newRow++;
 
@@ -151,7 +150,8 @@ namespace Puzzle
                     break;
 
                 case Keyboard.Key.Left:
-                    if (_currentCol != 0 && CheckPossibleMove(newRow, newCol - 1))
+                    if (_currentCol != 0 &&
+                        _field.GetCell(newRow, newCol - 1).Type == CellType.EmptyCell)
                     {
                         newCol--;
 
@@ -159,7 +159,8 @@ namespace Puzzle
                     break;
 
                 case Keyboard.Key.Right:
-                    if (_currentCol != Field.MapSize - 1 && CheckPossibleMove(newRow, newCol + 1))
+                    if (_currentCol != Field.MapSize - 1 &&
+                        _field.GetCell(newRow, newCol + 1).Type == CellType.EmptyCell)
                     {
                         newCol++;
 
@@ -168,33 +169,25 @@ namespace Puzzle
                     break;
             }
 
-            Cell temp = _field.Map[_currentRow, _currentCol];
-            Vector2f temp_pos = _field.Map[newRow, newCol].Position;
-
-            _field.Map[_currentRow, _currentCol] = _field.Map[newRow, newCol];
-            _field.Map[_currentRow, _currentCol].Position = temp.Position;
-
-            _field.Map[newRow, newCol] = temp;
-            _field.Map[newRow, newCol].Position = temp_pos;
+            _field.UpdateMap(_currentRow, _currentCol, newRow, newCol);
 
             _currentRow = newRow;
             _currentCol = newCol;
-
         }
 
-        public bool CheckForWin()
+        public void CheckForWin()
         {
             for (int i = 0; i < Field.MapSize; i++)
             {
-                if (_field.Map[i, 0].FillColor != _field.LeftColumn.FillColor ||
-                   _field.Map[i, 2].FillColor != _field.CenterColumn.FillColor ||
-                   _field.Map[i, 4].FillColor != _field.RightColumn.FillColor)
+                if (_field.GetCell(i, 0).FillColor != _field.LeftColumn.FillColor ||
+                   _field.GetCell(i, 2).FillColor != _field.CenterColumn.FillColor ||
+                   _field.GetCell(i, 4).FillColor != _field.RightColumn.FillColor)
                 {
-                    return false;
+                    return;
                 }
             }
 
-            return true;
+            IsFinished = true;
         }
 
     }
